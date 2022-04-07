@@ -34,7 +34,7 @@ public class AddProductServlet extends HttpServlet {
             getServletContext().getRequestDispatcher("/WEB-INF/mainPage.jsp").forward(req, resp);
             return;
         } else {
-            req.setAttribute("message", "user already exists");
+            req.setAttribute("message", "product already exists");
         }
         getServletContext().getRequestDispatcher("/WEB-INF/registration.jsp").forward(req, resp);
     }
