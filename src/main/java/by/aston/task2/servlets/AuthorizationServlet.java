@@ -2,6 +2,7 @@ package by.aston.task2.servlets;
 
 import by.aston.task2.dao.UserDao;
 import by.aston.task2.entity.User;
+import by.aston.task2.service.UserService;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -13,7 +14,7 @@ import java.util.Optional;
 
 @WebServlet(urlPatterns = "/authorization", name = "AuthorizationServlet")
 public class AuthorizationServlet extends HttpServlet {
-    private final UserDao userDao = new UserDao();
+    private final UserService userService = new UserService();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -24,12 +25,12 @@ public class AuthorizationServlet extends HttpServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String login = req.getParameter("login");
         String password = req.getParameter("password");
-        Optional<User> userByLog = userDao.findUserByLog(login);
+        Optional<User> userByLog = userService.findUserByLog(login);
         if (userByLog.isPresent()) {
             User user = userByLog.get();
             if (user.getPassword().equals(password)) {
                 req.getSession().setAttribute("user", user);
-                resp.sendRedirect("/");
+                getServletContext().getRequestDispatcher("/WEB-INF/mainPage.jsp").forward(req, resp);
                 return;
             } else {
                 req.setAttribute("message", "wrong password");

@@ -2,7 +2,7 @@ package by.aston.task2.servlets;
 
 import by.aston.task2.dao.UserDao;
 import by.aston.task2.entity.User;
-import by.aston.task2.service.RegistrationService;
+import by.aston.task2.service.UserService;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -14,13 +14,11 @@ import java.util.Optional;
 
 @WebServlet(urlPatterns = "/registration", name = "RegistrationServlet")
 public class RegistrationServlet extends HttpServlet {
-
-    private final RegistrationService registrationService = new RegistrationService();
-    private final UserDao userDao = new UserDao();
+    private final UserService registrationService = new UserService();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        getServletContext().getRequestDispatcher("/WEB-INF/registration.jsp").forward(req,resp);
+        getServletContext().getRequestDispatcher("/WEB-INF/registration.jsp").forward(req, resp);
     }
 
     @Override
@@ -29,14 +27,14 @@ public class RegistrationServlet extends HttpServlet {
         String login = req.getParameter("login");
         String password = req.getParameter("password");
 
-        Optional<User> userByLog = userDao.findUserByLog(login);
-        if(userByLog.isEmpty()){
-            registrationService.createUser(new User(name,login,password));
+        Optional<User> userByLog = registrationService.findUserByLog(login);
+        if (userByLog.isEmpty()) {
+            registrationService.createUser(new User(name, login, password));
             resp.sendRedirect("/");
             return;
-        }else{
+        } else {
             req.setAttribute("message", "user already exists");
         }
-        getServletContext().getRequestDispatcher("/WEB-INF/registration.jsp").forward(req,resp);
+        getServletContext().getRequestDispatcher("/WEB-INF/registration.jsp").forward(req, resp);
     }
 }

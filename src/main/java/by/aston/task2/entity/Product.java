@@ -1,12 +1,11 @@
 package by.aston.task2.entity;
 
-public class Item {
+public class Product {
     private long id;
-    private String name;
+    private String productName;
 
-    public Item(long id, String name){
-        this.id = id;
-        this.name = name;
+    public Product(String productName) {
+        this.productName = productName;
     }
 
     public long getId() {
@@ -18,10 +17,10 @@ public class Item {
     }
 
     public String getName() {
-        return name;
+        return productName;
     }
 
     public void setName(String name) {
-        this.name = name;
+        this.productName = name;
     }
 }

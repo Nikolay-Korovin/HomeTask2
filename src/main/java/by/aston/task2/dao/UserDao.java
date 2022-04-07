@@ -31,7 +31,7 @@ public class UserDao {
             statement.setString(1, log);
             ResultSet resultSet = statement.executeQuery();
             if (resultSet.next()) {
-                User user = new User(resultSet.getString("username"), log, resultSet.getString("password"));
+                User user = new User(resultSet.getLong("id"), resultSet.getString("username"), log, resultSet.getString("password"));
                 return Optional.of(user);
             }
         } catch (SQLException e) {
