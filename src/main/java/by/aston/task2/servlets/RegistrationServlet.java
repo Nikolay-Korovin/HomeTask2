@@ -30,7 +30,7 @@ public class RegistrationServlet extends HttpServlet {
         Optional<User> userByLog = registrationService.findUserByLog(login);
         if (userByLog.isEmpty()) {
             registrationService.createUser(new User(name, login, password));
-            resp.sendRedirect("/");
+            resp.sendRedirect("/WEB-INF/home.jsp");
             return;
         } else {
             req.setAttribute("message", "user already exists");

@@ -12,13 +12,13 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Optional;
 
-@WebServlet(urlPatterns = "/addproduct", name = "AddProductServlet")
-public class AddProductServlet extends HttpServlet {
+@WebServlet(urlPatterns = "/deleteproduct", name = "DeleteProductServlet")
+public class DeleteProductServlet extends HttpServlet {
     ProductService productService = new ProductService();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        req.setAttribute("userAndProductsMap",productService.getAllProducts((User)req.getSession().getAttribute("user")));
+        req.setAttribute("userAndProductsMap", productService.getAllProducts((User) req.getSession().getAttribute("user")));
         getServletContext().getRequestDispatcher("/WEB-INF/mainPage").forward(req, resp);
     }
 
@@ -27,18 +27,21 @@ public class AddProductServlet extends HttpServlet {
         String productName = req.getParameter("productname");
         User user = (User) req.getSession().getAttribute("user");
         Optional<Product> productByName = productService.findProductByName(productName);
-        req.setAttribute("userAndProductsMap",productService.getAllProducts((User)req.getSession().getAttribute("user")));
+        req.setAttribute("userAndProductsMap", productService.getAllProducts((User) req.getSession().getAttribute("user")));
+        if (productByName.isPresent()) {
 
-        if (productByName.isEmpty()) {
-            productService.createProduct(new Product(productName), user);
-            req.setAttribute("addmessage", productName + " product successfully added");
+            if (productService.deleteProduct(new Product(productName), user)) {
+
+                req.setAttribute("deletemessage", productName + " product successfully deleted");
+            } else {
+                req.setAttribute("deletemessage", user.getName() + " you dont have a permission to delete " + productName);
+            }
             getServletContext().getRequestDispatcher("/WEB-INF/mainPage.jsp").forward(req, resp);
             return;
         } else {
-            req.setAttribute("addmessage", productName + " product already exists");
+            req.setAttribute("deletemessage", productName + " product do not exists");
         }
         getServletContext().getRequestDispatcher("/WEB-INF/mainPage.jsp").forward(req, resp);
+
     }
-
-
 }

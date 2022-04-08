@@ -1,7 +1,7 @@
 package by.aston.task2.servlets;
 
-import by.aston.task2.dao.UserDao;
 import by.aston.task2.entity.User;
+import by.aston.task2.service.ProductService;
 import by.aston.task2.service.UserService;
 
 import javax.servlet.ServletException;
@@ -15,6 +15,7 @@ import java.util.Optional;
 @WebServlet(urlPatterns = "/authorization", name = "AuthorizationServlet")
 public class AuthorizationServlet extends HttpServlet {
     private final UserService userService = new UserService();
+    private final ProductService productService = new ProductService();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -30,6 +31,7 @@ public class AuthorizationServlet extends HttpServlet {
             User user = userByLog.get();
             if (user.getPassword().equals(password)) {
                 req.getSession().setAttribute("user", user);
+                req.setAttribute("userAndProductsMap",productService.getAllProducts((User)req.getSession().getAttribute("user")));
                 getServletContext().getRequestDispatcher("/WEB-INF/mainPage.jsp").forward(req, resp);
                 return;
             } else {

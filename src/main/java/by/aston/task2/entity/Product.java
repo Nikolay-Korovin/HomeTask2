@@ -16,11 +16,11 @@ public class Product {
         this.id = id;
     }
 
-    public String getName() {
+    public String getProductName() {
         return productName;
     }
 
-    public void setName(String name) {
-        this.productName = name;
+    public void setProductName(String productName) {
+        this.productName = productName;
     }
 }
