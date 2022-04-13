@@ -13,8 +13,7 @@ public class LogOutServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         if(req.getSession().getAttribute("user")!=null){
             req.getSession().invalidate();
-        }else{
-            resp.sendRedirect("/home");
         }
+        resp.sendRedirect("/home");
     }
 }

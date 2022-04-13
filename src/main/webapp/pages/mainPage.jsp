@@ -37,7 +37,7 @@
             <th width="120">productName</th>
 
         <c:forEach items="${userAndProductsMap}" var="userproductmap">
-            productid = ${userproductmap.key}, productname = ${userproductmap.value}<br>
+            productid = ${userproductmap.key}, productname = ${userproductmap.value} <br>
         </c:forEach>
 
     </table>

@@ -1,10 +1,27 @@
 package by.aston.task2.entity;
 
-public class User {
+import jakarta.persistence.*;
+
+import java.io.Serializable;
+
+//@Entity
+//@Table(name = "users")
+public class User implements Serializable {
+    //private static final long serialVersionUID = 1L;
+
+//    @Id
+//    @GeneratedValue(strategy = GenerationType.AUTO)
     private long id;
+//    @Column(name = "username")
     private String username;
+//    @Column(name = "login")
     private String login;
+//    @Column(name = "password")
     private String password;
+
+    public User() {
+
+    }
 
     public User(String name, String login, String password) {
         this.username = name;
@@ -18,6 +35,8 @@ public class User {
         this.login = login;
         this.password = password;
     }
+
+
 
     public long getId() {
         return id;

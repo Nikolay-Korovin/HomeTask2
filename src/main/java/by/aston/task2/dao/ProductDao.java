@@ -1,118 +1,125 @@
 package by.aston.task2.dao;
 
+import by.aston.task2.constraints.Constraints;
 import by.aston.task2.entity.*;
 
 import java.sql.*;
 import java.util.*;
 
 public class ProductDao {
-    public void createProduct(Product product, User user) {
-        String productName = product.getProductName();
-        long userId = user.getId();
-        final String sql = "INSERT INTO products (productname) VALUES (?)";
-        final String sql2 = "SELECT id FROM products WHERE productname = (?)";
-        final String sql3 = "INSERT INTO orders (userid, productid) VALUES (?,?)";
-
-        try (Connection connection = ConnectionPoolManager.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql);
-             PreparedStatement statement2 = connection.prepareStatement(sql2);
-             PreparedStatement statement3 = connection.prepareStatement(sql3)) {
+    public void createProduct(Product product, User user) throws SQLException {
+        if (product != null && user != null) {
+            String productName = product.getProductName();
+            long userId = user.getId();
             long productId = 0;
 
-            statement.setString(1, productName);
-            statement.executeUpdate();
+            try (Connection connection = ConnectionPoolManager.getConnection();
+                 PreparedStatement insertProduct = connection.prepareStatement(Constraints.INSERT_PRODUCT);
+                 PreparedStatement selectProductIdByProductName = connection.prepareStatement(Constraints.SELECT_PRODUCTID_BY_PRODUCTNAME);
+                 PreparedStatement insertUserIdAndProductIdIntoOrders = connection.prepareStatement(Constraints.INSERT_USERID_AND_PRODUCTID_INTO_ORDERS)) {
 
-            statement2.setString(1, productName);
-            ResultSet resultSet = statement2.executeQuery();
-            if (resultSet.next()) {
-                productId = resultSet.getLong("id");
+                connection.setAutoCommit(false);
+                connection.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
+
+                insertProduct.setString(1, productName);
+                insertProduct.executeUpdate();
+
+                selectProductIdByProductName.setString(1, productName);
+                ResultSet productIds = selectProductIdByProductName.executeQuery();
+                if (productIds.next()) {
+                    productId = productIds.getLong("id");
+                }
+
+                insertUserIdAndProductIdIntoOrders.setLong(1, userId);
+                insertUserIdAndProductIdIntoOrders.setLong(2, productId);
+                insertUserIdAndProductIdIntoOrders.executeUpdate();
+
+                connection.commit();
             }
-
-            statement3.setLong(1, userId);
-            statement3.setLong(2, productId);
-            statement3.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
         }
     }
 
-    public Optional<Product> findProductByName(String name) {
-        final String sql = "SELECT * FROM products WHERE productname=?";
+    public Optional<Product> findProductByName(String name) throws SQLException {
 
         try (Connection connection = ConnectionPoolManager.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setString(1, name);
-            ResultSet resultSet = statement.executeQuery();
+             PreparedStatement findProductByProductName = connection.prepareStatement(Constraints.SELECT_FROM_PRODUCTS_BY_PRODUCTNAME)) {
+            connection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+
+            findProductByProductName.setString(1, name);
+            ResultSet resultSet = findProductByProductName.executeQuery();
+
             if (resultSet.next()) {
                 Product product = new Product(resultSet.getString("productname"));
                 return Optional.of(product);
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
         }
         return Optional.empty();
     }
 
-    public boolean deleteProduct(Product product, User user) {
-        String productName = product.getProductName();
-        long userId = user.getId();
-        final String sql0 = "SELECT id FROM products WHERE productname = (?)";
-        final String sql1 = "SELECT userid FROM orders WHERE productid = (?)";
-        final String sql2 = "DELETE FROM products WHERE productName=?";
-        final String sql3 = "DELETE FROM orders WHERE productid = (?)";
+    public boolean deleteProduct(Product product, User user) throws SQLException {
+        if (product != null && user != null) {
+            String productName = product.getProductName();
+            long userId = user.getId();
 
+            try (Connection connection = ConnectionPoolManager.getConnection();
+                 PreparedStatement productIdByProductName = connection.prepareStatement(Constraints.SELECT_PRODUCTID_FROM_PRODUCTS_BY_PRODUCTNAME);
+                 PreparedStatement userIdFormOrdersWhereProductId = connection.prepareStatement(Constraints.SELECT_USERID_FROM_ORDERS_BY_PRODUCTID);
+                 PreparedStatement deleteOrderByProductId = connection.prepareStatement(Constraints.DELETE_FROM_ORDERS_BY_PRODUCTID);
+                 PreparedStatement deleteProductByProductName = connection.prepareStatement(Constraints.DELETE_FROM_PRODUCTS_BY_PRODUCTNAME)) {
+                long productIdInProducts = 0;
+                long userIdInOrders = 0;
 
-        try (Connection connection = ConnectionPoolManager.getConnection();
-             PreparedStatement statement0 = connection.prepareStatement(sql0);
-             PreparedStatement userIdFormOrdersWhereProductId = connection.prepareStatement(sql1);
-             PreparedStatement statement2 = connection.prepareStatement(sql2);
-             PreparedStatement statement3 = connection.prepareStatement(sql3)) {
-            long productIdInProducts = 0;
-            long userIdInOrders = 0;
+                connection.setAutoCommit(false);
+                connection.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
 
-            statement0.setString(1, productName);
-            ResultSet resultSet1 = statement0.executeQuery();
-            if (resultSet1.next()) {
-                productIdInProducts = resultSet1.getLong("id");
-            }
+                productIdByProductName.setString(1, productName);
+                ResultSet productId = productIdByProductName.executeQuery();
+                if (productId.next()) {
+                    productIdInProducts = productId.getLong("id");
+                }
 
-            userIdFormOrdersWhereProductId.setLong(1, productIdInProducts);
-            ResultSet resultSet2 = userIdFormOrdersWhereProductId.executeQuery();
-            if (resultSet2.next()) {
-                userIdInOrders = resultSet2.getInt("userid");
-                if (userId == userIdInOrders) {
-                    statement3.setLong(1, productIdInProducts);
-                    statement3.executeUpdate();
+                userIdFormOrdersWhereProductId.setLong(1, productIdInProducts);
+                ResultSet userIds = userIdFormOrdersWhereProductId.executeQuery();
+                if (userIds.next()) {
+                    userIdInOrders = userIds.getInt("userid");
+                    if (userId == userIdInOrders) {
+                        deleteOrderByProductId.setLong(1, productIdInProducts);
+                        deleteOrderByProductId.executeUpdate();
 
-                    statement2.setString(1, productName);
-                    statement2.executeUpdate();
-                }else{
-                    return false;
+                        deleteProductByProductName.setString(1, productName);
+                        deleteProductByProductName.executeUpdate();
+                        connection.commit();
+                    } else {
+                        return false;
+                    }
                 }
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
+            return true;
+        } else {
+            return false;
         }
-        return true;
+
     }
 
-    public Map<Integer,String> getAllProducts(User user) {
-        long userID = user.getId();
-        Map<Integer,String> products = new HashMap<>();
-        final String sql = "SELECT products.productname, orders.productId FROM orders JOIN products ON orders.productId = products.id WHERE userId = (?)";
+    public Map<Integer, String> getAllProducts(User user) throws SQLException {
+        if (user != null) {
+            long userID = user.getId();
+            Map<Integer, String> products = new HashMap<>();
 
-        try (Connection connection = ConnectionPoolManager.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)){
+            try (Connection connection = ConnectionPoolManager.getConnection();
+                 PreparedStatement getAllProducts = connection.prepareStatement(Constraints.GET_ALLPRODUCTS)) {
+                connection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
 
-            statement.setLong(1, userID);
-            ResultSet resultSet1 = statement.executeQuery();
-            while (resultSet1.next()) {
-                products.put(resultSet1.getInt("productid"),new Product(resultSet1.getString("productname")).getProductName());
+                getAllProducts.setLong(1, userID);
+                ResultSet resultSet1 = getAllProducts.executeQuery();
+                while (resultSet1.next()) {
+                    products.put(resultSet1.getInt("productid"), new Product(resultSet1.getString("productname")).getProductName());
+                }
+
             }
-        }catch (SQLException e){
-            e.printStackTrace();
+            return products;
+        }else{
+            return null;
         }
-
-        return products;
     }
 }
