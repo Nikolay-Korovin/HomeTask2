@@ -1,8 +1,8 @@
-package by.aston.task2.servlets;
+package java.by.aston.task2.servlets;
 
-import by.aston.task2.entity.User;
-import by.aston.task2.service.ProductService;
-import by.aston.task2.service.UserService;
+import java.by.aston.task2.entity.User;
+import java.by.aston.task2.service.ProductService;
+import java.by.aston.task2.service.UserService;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -11,7 +11,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.Optional;
+import java.util.List;
 
 @WebServlet(urlPatterns = "/authorization", name = "AuthorizationServlet")
 public class AuthorizationServlet extends HttpServlet {
@@ -27,18 +27,17 @@ public class AuthorizationServlet extends HttpServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String login = req.getParameter("login");
         String password = req.getParameter("password");
-        Optional<User> userByLog = null;
+        List<User> userByLog = null;
         try {
             userByLog = userService.findUserByLog(login);
         } catch (SQLException throwables) {
             req.setAttribute("message", "something went wrong");
         }
-        if (userByLog.isPresent()) {
-            User user = userByLog.get();
-            if (user.getPassword().equals(password)) {
-                req.getSession().setAttribute("user", user);
+        if (userByLog != null) {
+            if (userByLog.get(0).getPassword().equals(password)) {
+                req.getSession().setAttribute("user", userByLog.get(0));
                 try {
-                    req.setAttribute("userAndProductsMap",productService.getAllProducts((User)req.getSession().getAttribute("user")));
+                    req.setAttribute("productsList",productService.getAllProducts());
                 } catch (SQLException throwables) {
                     req.setAttribute("message", "something went wrong");
                 }

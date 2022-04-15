@@ -1,5 +1,5 @@
 <%--
-  Created by IntelliJ IDEA.
+  Created java.by IntelliJ IDEA.
   User: NK
   Date: 07.04.2022
   Time: 18:14
@@ -36,8 +36,8 @@
             <th width="120">productId</th>
             <th width="120">productName</th>
 
-        <c:forEach items="${userAndProductsMap}" var="userproductmap">
-            productid = ${userproductmap.key}, productname = ${userproductmap.value} <br>
+        <c:forEach items="${productsList}" var="product">
+            productid = ${product.getId}, productname = ${product.getProductName} <br>
         </c:forEach>
 
     </table>

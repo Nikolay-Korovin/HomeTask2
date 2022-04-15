@@ -1,5 +1,5 @@
 <%--
-  Created by IntelliJ IDEA.
+  Created java.by IntelliJ IDEA.
   User: NK
   Date: 06.04.2022
   Time: 15:13
@@ -11,7 +11,7 @@
     <title>Registration</title>
 </head>
 <body>
-<form action="/registration " method="post">
+<form action="/registration" method="post">
     <input type="text" name = "username" placeholder="Имя">
     <input type="text" name = "login" placeholder="Логин">
     <input type="password" name = "password" placeholder="Пароль">
